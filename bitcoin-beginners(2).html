@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin — The Beginner's Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a08;
+    --surface: #111110;
+    --card: #161614;
+    --border: #2a2a26;
+    --gold: #f7931a;
+    --gold-light: #ffb347;
+    --gold-dim: rgba(247,147,26,0.12);
+    --cream: #f5f0e8;
+    --muted: #7a7a6e;
+    --text: #e8e4dc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 3rem;
+    background: rgba(10,10,8,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 3rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 60% 50%, rgba(247,147,26,0.07) 0%, transparent 70%);
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 900;
+    line-height: 0.95;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.35s forwards;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    max-width: 520px;
+    margin-top: 2rem;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+
+  .hero-cta {
+    margin-top: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.65s forwards;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.8rem 2rem;
+    background: var(--gold);
+    color: #000;
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(247,147,26,0.3);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    margin-left: 1rem;
+  }
+
+  .btn-outline:hover {
+    background: var(--gold-dim);
+    color: var(--gold-light);
+  }
+
+  .hero-ticker {
+    position: absolute;
+    right: 3rem;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: right;
+    opacity: 0;
+    animation: fadeIn 1s 0.8s forwards;
+  }
+
+  .hero-btc-symbol {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(6rem, 12vw, 12rem);
+    font-weight: 900;
+    color: var(--gold);
+    opacity: 0.07;
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeIn 1s 0.9s forwards;
+  }
+
+  .stat-item {
+    padding: 2rem 2.5rem;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
+  }
+
+  .stat-item:last-child { border-right: none; }
+  .stat-item:hover { background: var(--gold-dim); }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--cream);
+  }
+
+  .stat-sub {
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-top: 0.25rem;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 6rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 em { font-style: italic; color: var(--gold); }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* WHAT IS BITCOIN */
+  .explainer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-top: 3rem;
+    align-items: start;
+  }
+
+  .explainer-text {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+  .explainer-text p + p { margin-top: 1rem; }
+
+  .explainer-text strong { color: var(--cream); font-weight: 500; }
+
+  .concept-cards {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .concept-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--gold);
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.3s;
+  }
+
+  .concept-card:hover::before { transform: scaleY(1); }
+  .concept-card:hover { border-color: rgba(247,147,26,0.3); background: #1a1a17; }
+
+  .concept-card h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .concept-card p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* CHART SECTION */
+  .chart-section {
+    background: var(--surface);
+    padding: 4rem 3rem;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .chart-section > .inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .chart-tabs {
+    display: flex;
+    gap: 0;
+    margin: 2rem 0 1.5rem;
+    border: 1px solid var(--border);
+    display: inline-flex;
+  }
+
+  .chart-tab {
+    padding: 0.6rem 1.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-right: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .chart-tab:last-child { border-right: none; }
+
+  .chart-tab.active {
+    background: var(--gold);
+    color: #000;
+  }
+
+  .chart-tab:not(.active):hover { color: var(--gold); background: var(--gold-dim); }
+
+  .chart-container {
+    position: relative;
+    height: 320px;
+  }
+
+  /* SUPPLY DONUT */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2rem;
+  }
+
+  .chart-card h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+  }
+
+  .donut-wrap {
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .donut-legend {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* WHY BITCOIN */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .why-card {
+    padding: 2rem;
+    border: 1px solid var(--border);
+    background: var(--card);
+    position: relative;
+    transition: all 0.25s;
+  }
+
+  .why-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(247,147,26,0.35);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  }
+
+  .why-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .why-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    color: var(--cream);
+  }
+
+  .why-card p {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  /* HALVING TIMELINE */
+  .timeline {
+    margin-top: 3rem;
+    position: relative;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 100px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 2rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+    transition: all 0.2s;
+  }
+
+  .timeline-item:hover { background: var(--gold-dim); margin: 0 -1rem; padding: 1.5rem 1rem; }
+  .timeline-item:last-child { border-bottom: none; }
+
+  .timeline-year {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--gold);
+    text-align: right;
+    padding-right: 2rem;
+    padding-top: 0.2rem;
+  }
+
+  .timeline-content h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
+    color: var(--cream);
+  }
+
+  .timeline-content p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  .timeline-badge {
+    display: inline-block;
+    background: var(--gold-dim);
+    color: var(--gold);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    padding: 0.25rem 0.6rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+
+  /* RESOURCES */
+  .resources-section {
+    background: var(--surface);
+    padding: 5rem 3rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .resources-section .inner { max-width: 1200px; margin: 0 auto; }
+
+  .resources-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .resource-category h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .resource-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid rgba(42,42,38,0.5);
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .resource-link:last-child { border-bottom: none; }
+
+  .resource-link:hover { color: var(--gold); padding-left: 0.5rem; }
+
+  .resource-link-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .resource-link-info { flex: 1; }
+
+  .resource-link-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .resource-link-desc {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  /* FAQ ACCORDION */
+  .faq-list { margin-top: 2.5rem; }
+
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .faq-q {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    cursor: pointer;
+    color: var(--cream);
+    font-size: 1rem;
+    font-weight: 400;
+    transition: color 0.2s;
+    user-select: none;
+    list-style: none;
+  }
+
+  .faq-q:hover { color: var(--gold); }
+
+  .faq-q::marker, .faq-q::-webkit-details-marker { display: none; }
+
+  .faq-arrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: var(--gold);
+    transition: transform 0.3s;
+  }
+
+  details[open] .faq-arrow { transform: rotate(45deg); }
+
+  .faq-a {
+    padding: 0 0 1.5rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.75;
+    max-width: 720px;
+  }
+
+  /* GLOSSARY */
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-top: 2.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .glossary-item {
+    background: var(--card);
+    padding: 1.5rem;
+    transition: background 0.2s;
+  }
+
+  .glossary-item:hover { background: #1c1c19; }
+
+  .glossary-term {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+
+  .glossary-def {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-btc {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    section { padding: 4rem 1.5rem; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .stat-item:nth-child(2) { border-right: none; }
+    .explainer-grid, .charts-row, .why-grid, .resources-grid { grid-template-columns: 1fr; }
+    .glossary-grid { grid-template-columns: 1fr; }
+    .hero-btc-symbol { display: none; }
+    .hero { padding: 7rem 1.5rem 2rem; }
+    .chart-section, .resources-section, footer { padding: 3rem 1.5rem; }
+    .timeline::before { left: 70px; }
+    .timeline-item { grid-template-columns: 70px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">₿ Bitcoin 101</div>
+  <ul class="nav-links">
+    <li><a href="#what">What is it</a></li>
+    <li><a href="#charts">Stats</a></li>
+    <li><a href="#why">Why Bitcoin</a></li>
+    <li><a href="#halving">Halving</a></li>
+    <li><a href="#resources">Resources</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-eyebrow">Your starter guide · No jargon · No hype</div>
+  <h1>The internet's<br><em>money layer.</em><br>Finally explained.</h1>
+  <p class="hero-sub">Bitcoin is the first truly scarce digital asset — no CEO, no government, no off switch. This page explains the basics in plain English so you can make up your own mind.</p>
+  <div class="hero-cta">
+    <a href="#what" class="btn">Start Here</a>
+    <a href="#resources" class="btn btn-outline">Jump to Resources</a>
+  </div>
+  <div class="hero-ticker">
+    <div class="hero-btc-symbol">₿</div>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-label">Max Supply</div>
+    <div class="stat-value">21M</div>
+    <div class="stat-sub">coins. ever. fixed.</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">In circulation</div>
+    <div class="stat-value">~19.8M</div>
+    <div class="stat-sub">~94% mined already</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Network uptime</div>
+    <div class="stat-value">99.98%</div>
+    <div class="stat-sub">since Jan 3, 2009</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-label">Next halving</div>
+    <div class="stat-value">~2028</div>
+    <div class="stat-sub">reward cuts in half</div>
+  </div>
+</div>
+
+<!-- WHAT IS BITCOIN -->
+<section id="what">
+  <div class="reveal">
+    <div class="section-label">01 — The Basics</div>
+    <h2>So what <em>is</em> Bitcoin, exactly?</h2>
+  </div>
+  <div class="explainer-grid reveal">
+    <div class="explainer-text">
+      <p>Bitcoin is <strong>digital money that no single person or institution controls.</strong> It runs on a global network of computers that anyone can join, and it's secured by math rather than trust in a bank or government.</p>
+      <p>Think of it like email for value. Just as email let you send a message to anyone on earth without a middleman, Bitcoin lets you send money to anyone, anywhere, instantly — and no one can stop, freeze, or reverse that transaction.</p>
+      <p>It was invented in 2008 by an anonymous person (or group) named <strong>Satoshi Nakamoto</strong>, who published a 9-page paper called the <em>Bitcoin Whitepaper</em>. The first block was mined on <strong>January 3, 2009.</strong> Satoshi disappeared in 2011 and no one has heard from them since. Bitcoin ran itself.</p>
+      <p>The most important thing to understand: <strong>there will only ever be 21 million Bitcoin.</strong> That scarcity is hard-coded into the software and cannot be changed.</p>
+    </div>
+    <div class="concept-cards">
+      <div class="concept-card">
+        <h3>⛓ Blockchain</h3>
+        <p>A public ledger of every Bitcoin transaction ever made, copied across thousands of computers worldwide. Like Google Docs — but no one can edit old entries.</p>
+      </div>
+      <div class="concept-card">
+        <h3>⛏ Mining</h3>
+        <p>Computers compete to validate transactions by solving complex math problems. The winner adds a new "block" to the chain and earns freshly created Bitcoin as a reward.</p>
+      </div>
+      <div class="concept-card">
+        <h3>🔑 Wallets & Keys</h3>
+        <p>Your Bitcoin isn't stored anywhere — it's always on the blockchain. A "wallet" just holds your private key: a secret code proving you're allowed to spend those coins.</p>
+      </div>
+      <div class="concept-card">
+        <h3>📉 Decentralized</h3>
+        <p>No headquarters. No CEO. No single server. If any country banned Bitcoin, the rest of the network would keep running. It's never had a single point of failure.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CHARTS -->
+<div class="chart-section" id="charts">
+  <div class="inner">
+    <div class="reveal">
+      <div class="section-label">02 — By the Numbers</div>
+      <h2>Bitcoin's <em>story in data</em></h2>
+    </div>
+    <div class="charts-row reveal">
+      <div class="chart-card">
+        <h3>Price History (Illustrative — Log Scale, USD)</h3>
+        <div class="chart-container">
+          <canvas id="priceChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Supply Distribution — out of 21 Million total</h3>
+        <div class="donut-wrap" style="position:relative;">
+          <canvas id="supplyChart"></canvas>
+          <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+            <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">Total Cap</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--cream);">21M</div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gold);">BTC Forever</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f7931a"></div>
+            <div>
+              <div style="color:var(--cream);font-size:0.85rem;font-weight:500;">Mined &amp; Circulating</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--gold);">~19.8M BTC &nbsp;·&nbsp; 94%</div>
+            </div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#888878"></div>
+            <div>
+              <div style="color:var(--cream);font-size:0.85rem;font-weight:500;">Lost / Satoshi's Coins</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">~3–4M BTC est. &nbsp;·&nbsp; ~18%</div>
+            </div>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#3a3a34"></div>
+            <div>
+              <div style="color:var(--cream);font-size:0.85rem;font-weight:500;">Yet to be Mined</div>
+              <div style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--muted);">~1.2M BTC &nbsp;·&nbsp; 6% &nbsp;·&nbsp; until ~2140</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY BITCOIN -->
+<section id="why">
+  <div class="reveal">
+    <div class="section-label">03 — The Case For It</div>
+    <h2>Why do people <em>care?</em></h2>
+  </div>
+  <div class="why-grid reveal">
+    <div class="why-card">
+      <span class="why-icon">🏦</span>
+      <h3>Bank the Unbanked</h3>
+      <p>1.4 billion people have no access to traditional banking. Bitcoin only requires a phone and internet. No ID, no credit history, no approval needed.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">🔒</span>
+      <h3>Self-Custody</h3>
+      <p>With Bitcoin, <em>you</em> are your own bank. Unlike stocks or dollars in a bank account, no one can freeze, seize, or restrict your Bitcoin without your private key.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">📊</span>
+      <h3>Inflation Hedge</h3>
+      <p>The US dollar has lost over 97% of its purchasing power since 1913. Bitcoin's supply is fixed. Historically, it has outperformed every major asset over long timeframes.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">🌍</span>
+      <h3>Borderless Transfers</h3>
+      <p>Sending $10,000 overseas via a bank can take days and cost $50+. Bitcoin settles in minutes for cents. Remittances to developing nations are a major use case.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">🤖</span>
+      <h3>Programmable Money</h3>
+      <p>Bitcoin can be programmed with conditions — like a will that automatically executes, or funds that only release when two parties agree. No lawyers required.</p>
+    </div>
+    <div class="why-card">
+      <span class="why-icon">⚡</span>
+      <h3>Lightning Network</h3>
+      <p>A layer built on top of Bitcoin enables near-instant, near-free micro-payments. Pay for a coffee in El Salvador or tip a creator in Nigeria — in seconds.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HALVING TIMELINE -->
+<section id="halving">
+  <div class="reveal">
+    <div class="section-label">04 — The Halving</div>
+    <h2>Every 4 years, the supply <em>cuts in half</em></h2>
+    <p style="color:var(--muted); max-width:600px; line-height:1.75; margin-top:0.5rem;">When Bitcoin launched, miners earned 50 BTC per block. Every ~210,000 blocks (~4 years), that reward halves. This is how Bitcoin enforces scarcity over time — and historically, halvings have preceded bull markets.</p>
+  </div>
+  <div class="timeline reveal">
+    <div class="timeline-item">
+      <div class="timeline-year">2009</div>
+      <div class="timeline-content">
+        <div class="timeline-badge">Genesis</div>
+        <h4>Bitcoin Launches</h4>
+        <p>Block reward: 50 BTC. Price: $0. Satoshi mines the first block with the message "Chancellor on brink of second bailout for banks."</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2012</div>
+      <div class="timeline-content">
+        <div class="timeline-badge">1st Halving</div>
+        <h4>Reward drops to 25 BTC</h4>
+        <p>Price before: ~$12. One year later: ~$1,000. Bitcoin gained mainstream attention for the first time.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2016</div>
+      <div class="timeline-content">
+        <div class="timeline-badge">2nd Halving</div>
+        <h4>Reward drops to 12.5 BTC</h4>
+        <p>Price before: ~$650. By the end of 2017: ~$20,000. The first truly global bull run — Bitcoin appeared on mainstream news worldwide.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2020</div>
+      <div class="timeline-content">
+        <div class="timeline-badge">3rd Halving</div>
+        <h4>Reward drops to 6.25 BTC</h4>
+        <p>Price before: ~$8,500. By Nov 2021: ~$69,000. Institutional investors — MicroStrategy, Tesla, Square — entered for the first time.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">2024</div>
+      <div class="timeline-content">
+        <div class="timeline-badge">4th Halving</div>
+        <h4>Reward drops to 3.125 BTC</h4>
+        <p>The first Bitcoin Spot ETF launched in the US (January 2024), followed by the halving in April. Institutional demand surged through regulated financial products.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">~2028</div>
+      <div class="timeline-content">
+        <div class="timeline-badge">5th Halving</div>
+        <h4>Reward drops to 1.5625 BTC</h4>
+        <p>As the block reward shrinks, transaction fees become increasingly important for securing the network long-term.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESOURCES -->
+<div class="resources-section" id="resources">
+  <div class="inner">
+    <div class="reveal">
+      <div class="section-label">05 — Go Deeper</div>
+      <h2>The best <em>free resources</em></h2>
+    </div>
+    <div class="resources-grid reveal">
+      <div class="resource-category">
+        <h3>📹 Watch First</h3>
+        <a href="https://www.youtube.com/watch?v=41JCpzvnn_0" target="_blank" class="resource-link">
+          <span class="resource-link-icon">▶</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">But How Does Bitcoin Actually Work?</span>
+            <span class="resource-link-desc">3Blue1Brown — The best visual explanation of the math behind Bitcoin. Fascinating even if you never buy any.</span>
+          </div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=bBC-nXj3Ng4" target="_blank" class="resource-link">
+          <span class="resource-link-icon">▶</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">How Does Bitcoin Work?</span>
+            <span class="resource-link-desc">ColdFusion — Clean 20-minute walkthrough of the whole system for a total beginner.</span>
+          </div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=Gc2en3nHxA4" target="_blank" class="resource-link">
+          <span class="resource-link-icon">▶</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Bitcoin: The End of Money as We Know It</span>
+            <span class="resource-link-desc">Award-winning documentary on the history of money and why Bitcoin matters.</span>
+          </div>
+        </a>
+        <a href="https://www.youtube.com/watch?v=PakCLRnRBs0" target="_blank" class="resource-link">
+          <span class="resource-link-icon">▶</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">What is the Lightning Network?</span>
+            <span class="resource-link-desc">Andreas Antonopoulos explains Bitcoin's fast payments layer simply.</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="resource-category">
+        <h3>📖 Read</h3>
+        <a href="https://bitcoin.org/bitcoin.pdf" target="_blank" class="resource-link">
+          <span class="resource-link-icon">📄</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">The Bitcoin Whitepaper</span>
+            <span class="resource-link-desc">Satoshi's original 9-page paper. Surprisingly readable. Worth doing at least once.</span>
+          </div>
+        </a>
+        <a href="https://bitcoin.org/en/faq" target="_blank" class="resource-link">
+          <span class="resource-link-icon">❓</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Bitcoin.org FAQ</span>
+            <span class="resource-link-desc">Official community FAQ covering everything from "How do I get Bitcoin?" to advanced topics.</span>
+          </div>
+        </a>
+        <a href="https://www.lopp.net/bitcoin-information.html" target="_blank" class="resource-link">
+          <span class="resource-link-icon">🗂</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Jameson Lopp's Resource List</span>
+            <span class="resource-link-desc">The most comprehensive curated library of Bitcoin education on the internet.</span>
+          </div>
+        </a>
+        <a href="https://www.swanbitcoin.com/why-bitcoin/" target="_blank" class="resource-link">
+          <span class="resource-link-icon">📘</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Why Bitcoin? — Swan Bitcoin</span>
+            <span class="resource-link-desc">A beginner-friendly deep-dive series on the case for Bitcoin as money.</span>
+          </div>
+        </a>
+      </div>
+
+      <div class="resource-category">
+        <h3>🛠 Tools & Trackers</h3>
+        <a href="https://mempool.space" target="_blank" class="resource-link">
+          <span class="resource-link-icon">⛓</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Mempool.space</span>
+            <span class="resource-link-desc">Live blockchain explorer. Watch transactions confirm in real time. Mesmerizing.</span>
+          </div>
+        </a>
+        <a href="https://clark.mobi/charts/bitcoin-rainbow-chart/" target="_blank" class="resource-link">
+          <span class="resource-link-icon">🌈</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Bitcoin Rainbow Chart</span>
+            <span class="resource-link-desc">A fun long-term price chart that shows historical buy/sell zones. Not financial advice!</span>
+          </div>
+        </a>
+        <a href="https://bitcoinmagazine.com" target="_blank" class="resource-link">
+          <span class="resource-link-icon">📰</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">Bitcoin Magazine</span>
+            <span class="resource-link-desc">The oldest Bitcoin-focused publication. Mix of news, technical analysis, and culture.</span>
+          </div>
+        </a>
+        <a href="https://coinmarketcap.com/currencies/bitcoin/" target="_blank" class="resource-link">
+          <span class="resource-link-icon">📊</span>
+          <div class="resource-link-info">
+            <span class="resource-link-name">CoinMarketCap — BTC</span>
+            <span class="resource-link-desc">Real-time price, market cap, volume, and historical data.</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="reveal">
+    <div class="section-label">06 — Common Questions</div>
+    <h2>Things people <em>always ask</em></h2>
+  </div>
+  <div class="faq-list reveal">
+    <details class="faq-item">
+      <summary class="faq-q">Is Bitcoin just used for crime? <span class="faq-arrow">+</span></summary>
+      <p class="faq-a">Cash is used for far more crime than Bitcoin — and Bitcoin is actually worse for criminals because every transaction is permanently public. The US government seized over $3.6 billion in Bitcoin from the Bitfinex hackers. Cash leaves no trail; Bitcoin does.</p>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">What if someone hacks Bitcoin? <span class="faq-arrow">+</span></summary>
+      <p class="faq-a">The Bitcoin network itself has never been hacked in 15+ years. It would require controlling more than 50% of all global mining power simultaneously — an astronomically expensive and practically impossible feat. Exchange hacks (like FTX) are different — that's like blaming Visa when a bank gets robbed.</p>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Do I have to buy a whole Bitcoin? <span class="faq-arrow">+</span></summary>
+      <p class="faq-a">No. Bitcoin is divisible down to 8 decimal places. The smallest unit is called a "Satoshi" (1 BTC = 100,000,000 satoshis). You can buy $10 worth if you want.</p>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">Is it too late to buy Bitcoin? <span class="faq-arrow">+</span></summary>
+      <p class="faq-a">Only ~94% of all Bitcoin has been mined, and the remaining ~1.2M coins will take over 100 years to enter circulation. Whether it's "too late" depends entirely on your timeframe and goals — but that's a question for a financial advisor, not this website.</p>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">What's the difference between Bitcoin and crypto? <span class="faq-arrow">+</span></summary>
+      <p class="faq-a">Bitcoin is the original and most decentralized cryptocurrency. "Crypto" now refers to thousands of other projects — many of which have centralized control, pre-mined tokens, or venture capital backing. Bitcoin is the only one with no founder who can change the rules, no company behind it, and a fully fixed supply.</p>
+    </details>
+    <details class="faq-item">
+      <summary class="faq-q">What happens when all 21 million are mined? <span class="faq-arrow">+</span></summary>
+      <p class="faq-a">Miners will be compensated entirely through transaction fees instead of block rewards. This won't happen until around the year 2140, so there's time to figure it out. The fee market already generates significant revenue for miners today.</p>
+    </details>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- GLOSSARY -->
+<section>
+  <div class="reveal">
+    <div class="section-label">07 — Glossary</div>
+    <h2>Words you'll <em>keep seeing</em></h2>
+  </div>
+  <div class="glossary-grid reveal">
+    <div class="glossary-item"><div class="glossary-term">Satoshi</div><div class="glossary-def">The smallest unit of Bitcoin — 0.00000001 BTC. Named after the creator.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Block</div><div class="glossary-def">A batch of verified transactions added to the blockchain roughly every 10 minutes.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Private Key</div><div class="glossary-def">A secret number that proves Bitcoin ownership. Never share this — it IS your Bitcoin.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Seed Phrase</div><div class="glossary-def">12 or 24 random words that back up your wallet. Store offline, never digitally.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Cold Wallet</div><div class="glossary-def">Hardware device (like a USB) that stores Bitcoin offline. Most secure method.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Hot Wallet</div><div class="glossary-def">Software wallet connected to the internet. Convenient but less secure than cold storage.</div></div>
+    <div class="glossary-item"><div class="glossary-term">DCA</div><div class="glossary-def">Dollar-Cost Averaging — buying a fixed amount regularly (e.g., $50/week) to reduce timing risk.</div></div>
+    <div class="glossary-item"><div class="glossary-term">HODL</div><div class="glossary-def">Slang for holding Bitcoin long-term instead of trading. Originated from a 2013 typo on a forum.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Hash Rate</div><div class="glossary-def">The total computing power of the Bitcoin network. Higher = more secure.</div></div>
+    <div class="glossary-item"><div class="glossary-term">Lightning Network</div><div class="glossary-def">A layer built on Bitcoin enabling instant, nearly free micropayments between parties.</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-note">Bitcoin 101 · Educational resource · Not financial advice</div>
+  <div class="footer-btc">₿ Vires in numeris — "Strength in numbers"</div>
+</footer>
+
+<script>
+// SCROLL REVEAL
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+reveals.forEach(el => observer.observe(el));
+
+// PRICE CHART
+const priceCtx = document.getElementById('priceChart').getContext('2d');
+
+const years = ['2010','2011','2012','2013','2014','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024'];
+const prices = [0.08, 31, 13, 1000, 315, 430, 960, 19800, 3200, 7200, 29000, 69000, 16500, 44000, 98000];
+
+const gradient = priceCtx.createLinearGradient(0, 0, 0, 320);
+gradient.addColorStop(0, 'rgba(247,147,26,0.35)');
+gradient.addColorStop(1, 'rgba(247,147,26,0)');
+
+// Key milestones to label (index: label text)
+const labelMap = {
+  2: '$13',      // 2012
+  3: '$1K',      // 2013
+  6: '$960',     // 2016
+  7: '$19.8K',   // 2017 peak
+  10: '$29K',    // 2020
+  11: '$69K',    // 2021 ATH
+  13: '$44K',    // 2023
+  14: '$98K',    // 2024
+};
+
+new Chart(priceCtx, {
+  type: 'line',
+  data: {
+    labels: years,
+    datasets: [{
+      label: 'BTC Price (USD)',
+      data: prices,
+      borderColor: '#f7931a',
+      borderWidth: 2,
+      pointBackgroundColor: ctx => labelMap[ctx.dataIndex] ? '#f7931a' : 'rgba(247,147,26,0.4)',
+      pointRadius: ctx => labelMap[ctx.dataIndex] ? 5 : 3,
+      pointHoverRadius: 7,
+      fill: true,
+      backgroundColor: gradient,
+      tension: 0.4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1a17',
+        borderColor: '#2a2a26',
+        borderWidth: 1,
+        titleColor: '#f7931a',
+        bodyColor: '#e8e4dc',
+        callbacks: {
+          label: ctx => ` $${ctx.parsed.y.toLocaleString()}`
+        }
+      },
+      datalabels: {
+        display: ctx => !!labelMap[ctx.dataIndex],
+        formatter: (val, ctx) => labelMap[ctx.dataIndex],
+        color: '#f7931a',
+        font: { family: 'DM Mono', size: 10, weight: '500' },
+        anchor: ctx => {
+          // Position labels above or below to avoid overlap
+          const belowIdxs = [3, 7, 11];
+          return belowIdxs.includes(ctx.dataIndex) ? 'end' : 'end';
+        },
+        align: ctx => {
+          const aboveIdxs = [7, 11, 14];
+          return aboveIdxs.includes(ctx.dataIndex) ? 'top' : 'bottom';
+        },
+        offset: 4,
+        backgroundColor: 'rgba(10,10,8,0.75)',
+        borderRadius: 3,
+        padding: { top: 2, bottom: 2, left: 5, right: 5 },
+      }
+    },
+    scales: {
+      y: {
+        type: 'logarithmic',
+        grid: { color: '#1e1e1b' },
+        ticks: {
+          color: '#7a7a6e',
+          font: { family: 'DM Mono', size: 10 },
+          callback: v => v >= 1000 ? '$' + (v/1000).toFixed(0) + 'k' : '$' + v
+        }
+      },
+      x: {
+        grid: { color: '#1e1e1b' },
+        ticks: { color: '#7a7a6e', font: { family: 'DM Mono', size: 10 } }
+      }
+    }
+  }
+});
+
+// SUPPLY DONUT
+const supplyCtx = document.getElementById('supplyChart').getContext('2d');
+new Chart(supplyCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Mined & Circulating', 'Lost / Satoshi\'s', 'Yet to be Mined'],
+    datasets: [{
+      data: [15.8, 3.8, 1.2],
+      backgroundColor: ['#f7931a', '#888878', '#3a3a34'],
+      borderColor: '#161614',
+      borderWidth: 3,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '68%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1a1a17',
+        borderColor: '#2a2a26',
+        borderWidth: 1,
+        titleColor: '#f7931a',
+        bodyColor: '#e8e4dc',
+        callbacks: {
+          label: ctx => ` ~${ctx.parsed}M BTC (${Math.round(ctx.parsed/21*100)}% of 21M)`
+        }
+      },
+      datalabels: {
+        display: ctx => ctx.dataIndex === 0,
+        formatter: () => '94%\ncirculating',
+        color: '#000',
+        font: { family: 'DM Mono', size: 9, weight: '500' },
+        textAlign: 'center',
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
